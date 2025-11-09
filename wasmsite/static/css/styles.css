@@ -1,0 +1,22 @@
+body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden; /* Hide overflow to prevent horizontal scrollbar */
+}
+
+
+canvas, svg {
+    display: block;
+    width: 100%; /* Canvas fills 100% of its container */
+    height: 100%;
+    /* background-color: white; */
+    background-color: transparent;
+
+    border: 1px solid black; /* Black border */
+}
+
+#optionsContainer {
+    position: relative;
+    z-index: 2; /* Ensure it's on top of other elements if needed */
+    margin-top: 10px; 
+}

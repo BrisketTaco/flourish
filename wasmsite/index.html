@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Harmonograph WASM with Pyodide</title>
+    <link rel="stylesheet" href="static/css/styles.css">
+</head>
+<body>
+    <!-- Both canvas and SVG work. Uncomment/recomment the appropriate element.
+        SVG is perhaps the way to go for more advanced animation, as you can reference (remove) curves directly
+        Canvas is bitmap based, making deletion difficult, without a lot of recalculation --> 
+
+    <canvas id="canvasEl" style="position: absolute; z-index: 2;"></canvas>
+    <canvas id="canvasElTop" style="position: absolute; z-index: 1;"></canvas>
+
+    
+    <!--<svg id="svgEl" style="position: absolute; z-index: 1;" xmlns="http://www.w3.org/2000/svg"></svg>-->
+
+    <div id="optionsContainer">
+        <button id="generateBtn">Generate</button>
+
+        <label for="animated">Animated:
+            <input type="checkbox" id="animated" checked>
+        </label>
+        <label for="animationInterval">AnimationInterval:
+            <input type="number" id="animationInterval" min="1" value="50">
+        </label>
+        <label for="showDots">Dots:
+            <input type="checkbox" id="showDots" checked>
+        </label>
+        <label for="strokeStyle"> | Color:
+            <input type="color" id="strokeStyle" value="#8A8A8A">
+        </label>
+        <label for="lineWidth">Line Width:
+            <input type="number" id="lineWidth" min=".001" value="0.6">
+        </label>
+        <label for="dt">DT:
+            <input type="number" id="dt" min=".00001" value="0.001">
+        </label>
+
+        <label for="randomSeed">Seed:
+            <input type="number" id="randomSeed" value="">
+            <input type="checkbox" id="randomSeedEnabled" name="randomSeedEnabled">
+        </label>
+
+        <label>
+            <input type="radio" name="graphType" value="Spirograph" checked onclick="toggleSpirographOptions(true)"> Spirograph
+        </label>
+        <label>
+            <input type="radio" name="graphType" value="Harmonograph" onclick="toggleSpirographOptions(false)"> Harmonograph
+        </label>
+
+        <div id="spirographOptions" style="display:none;">
+            Main circle radius: 
+            <input type="number" id="mainCircleRadius" min="0.01" max="0.10" step="0.01" value="">
+            Number of gears: 
+            <input type="number" id="numGears" min="1" onchange="updateGearOptions()">
+            <div id="gearOptions"></div>
+        </div> 
+    </div>
+
+    <div id="loadingModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center;">
+        <div style="background-color: white; padding: 20px; border-radius: 5px;">Loading Pyodide...</div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/pyodide@0.24.0/pyodide.min.js"></script>
+    <script type="text/javascript" src="js/draw.js"></script>
+    <script type="text/javascript" src="js/main.js"></script>
+    
+</body>
+</html>
