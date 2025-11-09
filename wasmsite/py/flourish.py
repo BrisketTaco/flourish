@@ -34,7 +34,8 @@ def get_points(style, dt, spirogears, main_circle_radius, random_seed, num_pendu
         if main_circle_radius is None or math.isnan(main_circle_radius):
             main_circle_radius = random.random()
 
-        if spirogears is None or len(spirogears) == 0:
+        has_gears = spirogears is not None and hasattr(spirogears, '__len__')
+        if not has_gears or len(spirogears) == 0:
             print("Generating random Spirograph")
             curve = Spirograph.make_random(random)
             print(f"{main_circle_radius=}")
@@ -103,7 +104,7 @@ def generate(style = "harmonograph", canvas_element = "harmonographCanvas", scal
         print(spirogears)
         
     print("Generating: Done")
-    if canvas_element is None:
+    if canvas_element is None or not canvas_element:
         # Pass the objects back to Javascript
         # In JS, these will be .toJS'd to js elements
         # instead of proxies... this could also be done here:
