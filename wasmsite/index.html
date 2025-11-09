@@ -52,11 +52,17 @@
         </label>
 
         <div id="spirographOptions" style="display:none;">
-            Main circle radius: 
+            Main circle radius:
             <input type="number" id="mainCircleRadius" min="0.01" max="0.10" step="0.01" value="">
-            Number of gears: 
-            <input type="number" id="numGears" min="1" onchange="updateGearOptions()">
+            <br>
+            <label>Number of gears: 2 (fixed)</label>
+            <input type="hidden" id="numGears" value="2">
             <div id="gearOptions"></div>
+        </div>
+
+        <div id="harmonographOptions" style="display:none;">
+            Number of pendulums:
+            <input type="number" id="numPendulums" min="1" max="10" value="2">
         </div> 
     </div>
 
