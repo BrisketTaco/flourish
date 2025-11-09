@@ -71,20 +71,32 @@ async function generateGraph() {
 
     gears = null;
     mainCircleRadius = null;
+    numPendulums = 2; 
+
     if (graphStyle == "spirograph"){
         mainCircleRadius = parseFloat(document.getElementById('mainCircleRadius').value);
         numGears = parseInt(document.getElementById('numGears').value);
-        gears = []
-        for (let i = 0; i < numGears; i++) {
-            const gearDiv = document.getElementById('gearOptions').children[i];
-            const gearRadius = parseFloat(gearDiv.querySelector('input[type="number"]:nth-child(1)').value);
-            const penRadius = parseFloat(gearDiv.querySelector('input[type="number"]:nth-child(2)').value);
-            const inside = gearDiv.querySelector('input[type="checkbox"]').checked;
-            gears.push({
-                gearRadius: gearRadius,
-                penRadius: penRadius,
-                inside: inside
-            });
+
+        const gearOptionsDiv = document.getElementById('gearOptions');
+        if (gearOptionsDiv && gearOptionsDiv.children.length > 0) {
+            gears = []
+            for (let i = 0; i < numGears && i < gearOptionsDiv.children.length; i++) {
+                const gearDiv = gearOptionsDiv.children[i];
+                const gearRadius = parseFloat(gearDiv.querySelector('input[type="number"]:nth-child(1)').value);
+                const penRadius = parseFloat(gearDiv.querySelector('input[type="number"]:nth-child(2)').value);
+                const inside = gearDiv.querySelector('input[type="checkbox"]').checked;
+                gears.push({
+                    gearRadius: gearRadius,
+                    penRadius: penRadius,
+                    inside: inside
+                });
+            }
+        }
+        // If no gear options provided, gears stays null and Python will generate random
+    } else {
+        const numPendulumsInput = document.getElementById('numPendulums');
+        if (numPendulumsInput && numPendulumsInput.value) {
+            numPendulums = parseInt(numPendulumsInput.value);
         }
     }
 
@@ -106,16 +118,16 @@ async function generateGraph() {
             import sys
 
             # This is some pyodide magic: variables defined in the global scope can be imported
-            from js import pixelRatio, pythonDrawElement, graphStyle, gears, mainCircleRadius, randomSeed, dt
+            from js import pixelRatio, pythonDrawElement, graphStyle, gears, mainCircleRadius, randomSeed, dt, numPendulums
 
             sys.path.append('py')
             print("Initialized")
-            
+
             import flourish
 
             # Set canvas_element only if you want this rendered in Python (slower)
             print(gears)
-            curve_points_x, curve_points_y = flourish.generate(style = graphStyle, canvas_element = pythonDrawElement, scale_ratio = pixelRatio, main_circle_radius = mainCircleRadius, spirogears = gears, random_seed = randomSeed, dt = dt)
+            curve_points_x, curve_points_y = flourish.generate(style = graphStyle, canvas_element = pythonDrawElement, scale_ratio = pixelRatio, main_circle_radius = mainCircleRadius, spirogears = gears, random_seed = randomSeed, dt = dt, num_pendulums = numPendulums)
             print(f"# of data points: {len(curve_points_x)}")
 
             `;
@@ -264,6 +276,7 @@ function resizeAndPrepareCanvas() {
 // Spirograph Options
 function toggleSpirographOptions(show) {
     document.getElementById('spirographOptions').style.display = show ? 'block' : 'none';
+    document.getElementById('harmonographOptions').style.display = show ? 'none' : 'block';
 }
 
 function updateGearOptions() {
