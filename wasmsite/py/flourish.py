@@ -38,8 +38,13 @@ def get_points(style, dt, spirogears, main_circle_radius, random_seed, num_pendu
         if not has_gears or len(spirogears) == 0:
             print("Generating random Spirograph")
             curve = Spirograph.make_random(random)
+            # some seeds are slow bc they generate many cycles/points
+            # this caps it so browser doesn't hang
+            natural_cycles = curve._cycles()
+            curve.max_cycles = min(natural_cycles, 150)
             print(f"{main_circle_radius=}")
             print(f"Generated gears: {curve.gears[0].teeth}, {curve.gears[1].teeth}")
+            print(f"Cycles: {natural_cycles} capped to {curve.max_cycles}")
         else:
             curve = Spirograph()
             curve.outer_teeth = 144
@@ -78,6 +83,10 @@ def get_points(style, dt, spirogears, main_circle_radius, random_seed, num_pendu
                 curve.pen_extra = random.random() * 0.5
             curve.last_speed = 1
             curve.last_speed_denom = 1
+
+            natural_cycles = curve._cycles()
+            curve.max_cycles = min(natural_cycles, 100)
+            print(f"Cycles: {natural_cycles} capped to {curve.max_cycles}")
     elif style == "random1":
         # Not used, experimenting with different parameters
         curve = Harmonograph.make_random(random, npend=num_pendulums, syms=['R', 'X', 'Y', 'N'])
