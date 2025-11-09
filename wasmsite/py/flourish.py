@@ -6,14 +6,14 @@ from pyodide.ffi import create_proxy
 import random
 #import numpy as np
 from harmonograph import Harmonograph
-from spirograph import Spirograph
+from spirograph import Spirograph, Gear
 from render import ElegantLine, ColorLine
 import pythonrender
 import math
 
 
 # main.py
-def get_points(style, dt, spirogears, main_circle_radius, random_seed):
+def get_points(style, dt, spirogears, main_circle_radius, random_seed, num_pendulums=2):
     """Original code used numpy's RNG. This had hiccups in Pyodide: it was an easy switch to `random`, but not sure if important
     or useful to reconsider.  """
 
@@ -36,45 +36,68 @@ def get_points(style, dt, spirogears, main_circle_radius, random_seed):
 
         if spirogears is None or len(spirogears) == 0:
             print("Generating random Spirograph")
-            curve = Spirograph()
-            curve.main_circle(main_circle_radius)
-
-            gearr = random.random()
-
-            num_gears = random.randint(1, 5)
-            print(f"{main_circle_radius=} {num_gears=}")
-
-            for i in range(num_gears):
-                gearr = random.random() * random.random()
-                penr = random.random() / 10
-                inside = random.choice([True, False])
-                print(f"Gear {i}: {gearr=} {penr=} {inside=}")
-                curve.add_gear(gearr=gearr, penr=penr, inside=inside)
+            curve = Spirograph.make_random(random)
+            print(f"{main_circle_radius=}")
+            print(f"Generated gears: {curve.gears[0].teeth}, {curve.gears[1].teeth}")
         else:
             curve = Spirograph()
-            curve.main_circle(main_circle_radius)
-            for g in spirogears:
-                curve.add_gear(gearr=g.gearRadius, penr=g.penRadius, inside=g.inside)
-    elif style == "random1": 
+            curve.outer_teeth = 144
+
+            gears_to_use = spirogears[:2] if len(spirogears) >= 2 else spirogears
+
+            for i in range(2):
+                if i < len(gears_to_use):
+                    g = gears_to_use[i]
+                    if i == 0:
+                        parent_teeth = curve.outer_teeth
+                    else:
+                        parent_teeth = curve.gears[i-1].teeth
+
+                    teeth = int(g.gearRadius * parent_teeth)
+                    teeth = max(5, min(teeth, parent_teeth - 1))  # Ensure valid range
+
+                    inside = 1 if g.inside else 0  # Convert boolean to int
+                    curve.gears.append(Gear(name=f"g{chr(97+i)}", teeth=teeth, inside=inside))
+                else:
+                    # Add a random gear to reach 2 gears
+                    if i == 0:
+                        parent_teeth = curve.outer_teeth
+                    else:
+                        parent_teeth = curve.gears[i-1].teeth
+
+                    gear_ratio = random.random() * random.random()
+                    teeth = int(gear_ratio * parent_teeth)
+                    teeth = max(5, min(teeth, parent_teeth - 1))
+                    inside = random.choice([0, 1])
+                    curve.gears.append(Gear(name=f"g{chr(97+i)}", teeth=teeth, inside=inside))
+
+            if spirogears:
+                curve.pen_extra = spirogears[-1].penRadius * 10  # Scale back up from /10
+            else:
+                curve.pen_extra = random.random() * 0.5
+            curve.last_speed = 1
+            curve.last_speed_denom = 1
+    elif style == "random1":
         # Not used, experimenting with different parameters
-        curve = Harmonograph.make_random(random, npend=2, syms=['R', 'X', 'Y', 'N'])
+        curve = Harmonograph.make_random(random, npend=num_pendulums, syms=['R', 'X', 'Y', 'N'])
     else:
-        curve = Harmonograph.make_random(random, npend=2, syms=['X', 'Y', 'R'])
+        curve = Harmonograph.make_random(random, npend=num_pendulums, syms=['X', 'Y', 'R'])
         
     xs = []
     ys = []
 
     # TODO: Change points() so it returns the points, rather than going from a List to a Generator and back to a List
-    for x,y in curve.points(["x", "y"], dt):
+    scale = main_circle_radius if style == "spirograph" or style is False else 1.0
+    for x,y in curve.points(["x", "y"], scale, dt):
         xs.append(x)
         ys.append(y)
     print("get_points: Done")
     return xs, ys
 
-def generate(style = "harmonograph", canvas_element = "harmonographCanvas", scale_ratio = 1, dt = .002, spirogears = None, main_circle_radius = None, random_seed = None):
+def generate(style = "harmonograph", canvas_element = "harmonographCanvas", scale_ratio = 1, dt = .002, spirogears = None, main_circle_radius = None, random_seed = None, num_pendulums = 2):
     print("Generating: Started")
     print(f"{style=}")
-    xs, ys = get_points(style=style, dt=dt, spirogears=spirogears, main_circle_radius=main_circle_radius, random_seed = random_seed)
+    xs, ys = get_points(style=style, dt=dt, spirogears=spirogears, main_circle_radius=main_circle_radius, random_seed = random_seed, num_pendulums=num_pendulums)
 
     if spirogears is not None:
         print(spirogears)
